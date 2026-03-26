@@ -3,10 +3,14 @@ services:
     build: .
     env_file:
       - .env
+    environment:
+      - TZ=Asia/Tokyo
     depends_on:
       - redis
     restart: unless-stopped
 
   redis:
     image: redis:7-alpine
+    environment:
+      - TZ=Asia/Tokyo
     restart: unless-stopped

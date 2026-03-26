@@ -23,9 +23,8 @@ MESSAGE_MAX_LENGTH = 2000
 servers: dict[str, dict[str, str]] = json.loads(os.environ.get("DISCORD_SERVERS", "{}"))
 
 lib_config: dict[str, dict[str, str]] = {
-    "google_custom_search": {
-        "api_key": os.environ.get("GOOGLE_API_KEY", ""),
-        "search_engine_id": os.environ.get("GOOGLE_SEARCH_ENGINE_ID", ""),
+    "brave_search": {
+        "api_key": os.environ.get("BRAVE_SEARCH_API_KEY", ""),
     },
     "chatgpt": {
         "openai_api_key": os.environ.get("OPENAI_API_KEY", ""),

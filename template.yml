@@ -2,8 +2,8 @@ tenki_jp:
   templates:
     default: |
       {% for w in data.weather %}{{ w.date }}の{{ data.area_name }}の天気：{{ w.weather }}
-      {{ w.hightemp }}{{ w.hightempdiff }}/{{ w.lowtemp }}{{ w.lowtempdiff }}
-      {{ w.rain_probability | join('/') }}
+      {{ w.hightemp }}/{{ w.lowtemp }}
+      降水確率：{{ w.rain_probability | join('/') }}
       {% endfor %}{% if data.rains %}傘持ってけー{% endif %}
 
 omikuji:

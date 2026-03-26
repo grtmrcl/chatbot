@@ -19,8 +19,7 @@ cp .env-sample .env
 |---|---|
 | `token` | Discord Bot のトークン |
 | `DISCORD_SERVERS` | 応答するチャンネルの設定（JSON） |
-| `GOOGLE_API_KEY` | Google Custom Search API キー |
-| `GOOGLE_SEARCH_ENGINE_ID` | Google プログラマブル検索エンジン ID |
+| `BRAVE_SEARCH_API_KEY` | Brave Search API キー |
 | `OPENAI_API_KEY` | OpenAI API キー |
 
 ### DISCORD_SERVERS の設定例
@@ -56,35 +55,34 @@ docker compose down
 
 ## コマンド一覧
 
-### Google 検索
+### Web 検索（Brave Search）
 
 ```
 google <キーワード>
-```
-
-```
-google Python チュートリアル
+brave <キーワード>
+g <キーワード>
 ```
 
 #### 画像検索
 
 ```
 image <キーワード>
+i <キーワード>
 ```
 
 #### サイト指定検索
 
-| コマンド | 検索対象 |
-|---|---|
-| `wiki <キーワード>` | Wikipedia |
-| `youtube <キーワード>` | YouTube |
-| `nicovideo <キーワード>` | ニコニコ動画 |
+| コマンド | エイリアス | 検索対象 |
+|---|---|---|
+| `wiki <キーワード>` | — | Wikipedia（Web検索） |
+| `youtube <キーワード>` | `yt <キーワード>` | YouTube（動画検索） |
+| `nicovideo <キーワード>` | `nico <キーワード>` | ニコニコ動画（動画検索） |
 
 ---
 
 ### 天気予報
 
-tenki.jp から今日・明日の天気を取得する。
+[weather.tsukumijima.net](https://weather.tsukumijima.net/) から今日・明日の天気を取得する。
 
 ```
 tenki <地名>
@@ -96,6 +94,19 @@ tenki 東京
 weather 大阪
 ```
 
+#### エリア一覧
+
+指定できる地名は都道府県ごとに確認できる。
+
+```
+tenkiarea <都道府県名>
+```
+
+```
+tenkiarea 東京都
+→ 東京, 大島, 八丈島, 父島
+```
+
 ---
 
 ### 乗換案内
@@ -105,6 +116,8 @@ Navitime から経路を検索する。
 ```
 route <出発地> <目的地> [オプション]
 乗換 <出発地> <目的地> [オプション]
+乗り換え <出発地> <目的地> [オプション]
+乗換え <出発地> <目的地> [オプション]
 ```
 
 ```
@@ -129,13 +142,12 @@ route 新宿 渋谷
 omikuji <タイプ>
 ```
 
-`template.yml` に定義されたタイプを指定する。
+`template.yml` に定義されたタイプを指定する。タイプを省略すると `unsei` が使われる。
 
 ```
 omikuji unsei
+omikuji
 ```
-
-タイプを省略すると `g1` が使われる（`template.yml` に `g1` の定義が必要）。
 
 ---
 
