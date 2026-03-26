@@ -5,10 +5,7 @@ on:
 jobs:
   deploy:
     runs-on: ubuntu-latest
-    env:
-      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
-      - uses: actions/checkout@v4
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1
         with:
