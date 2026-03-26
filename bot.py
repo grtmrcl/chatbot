@@ -55,6 +55,19 @@ logger = logging.getLogger(__name__)
 JST = zoneinfo.ZoneInfo("Asia/Tokyo")
 
 
+def _resolve_channel(channel_id_str: str, channel_config: dict[str, str]):
+    """チャンネルIDまたはサーバーIDからチャンネルを解決する。
+    サーバーIDの場合は notify_channel_id を使用する。"""
+    channel = client.get_channel(int(channel_id_str))
+    if channel is not None:
+        return channel
+    # サーバーIDの場合は notify_channel_id を参照
+    notify_channel_id = channel_config.get("notify_channel_id")
+    if notify_channel_id:
+        return client.get_channel(int(notify_channel_id))
+    return None
+
+
 @tasks.loop(time=datetime.time(10, 0, tzinfo=JST))
 async def daily_event_remind():
     for channel_id_str, channel_config in servers.items():
@@ -71,9 +84,9 @@ async def daily_event_remind():
         response = formatter.get_response(response_data=response_data, response_type=response_type)
         if not response:
             continue
-        channel = client.get_channel(int(channel_id_str))
+        channel = _resolve_channel(channel_id_str, channel_config)
         if channel is None:
-            logger.warning("チャンネルが見つかりません: %s", channel_id_str)
+            logger.warning("チャンネルが見つかりません: %s (notify_channel_id未設定の可能性)", channel_id_str)
             continue
         while response:
             await channel.send(response[:MESSAGE_MAX_LENGTH])
@@ -96,9 +109,9 @@ async def daily_opebirth():
         response = formatter.get_response(response_data=response_data, response_type=response_type)
         if not response:
             continue
-        channel = client.get_channel(int(channel_id_str))
+        channel = _resolve_channel(channel_id_str, channel_config)
         if channel is None:
-            logger.warning("チャンネルが見つかりません: %s", channel_id_str)
+            logger.warning("チャンネルが見つかりません: %s (notify_channel_id未設定の可能性)", channel_id_str)
             continue
         while response:
             await channel.send(response[:MESSAGE_MAX_LENGTH])
