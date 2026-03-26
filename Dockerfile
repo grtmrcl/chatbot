@@ -7,6 +7,7 @@ RUN pip install --no-cache-dir -r requirements.txt
 
 COPY bot.py .
 COPY lib/ ./lib/
+COPY tool/ ./tool/
 COPY template.yml .
 
 CMD ["python", "bot.py"]

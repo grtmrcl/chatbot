@@ -5,8 +5,11 @@ from lib.handler.brave_search import BraveSearch
 from lib.handler.chatgpt import ChatGPT
 from lib.handler.dice import Dice
 from lib.handler.omikuji import Omikuji
-from lib.handler.tenki_jp import TenkiJp
+from lib.handler.weather import Weather
 from lib.handler.route import Route
+from lib.handler.sss import Sss
+from lib.handler.events import Events
+from lib.handler.opebirth import Opebirth
 
 
 class MessageProcesser:
@@ -16,8 +19,11 @@ class MessageProcesser:
         self._dice = Dice(config)
         self._omikuji = Omikuji(config)
         self._brave = BraveSearch(config)
-        self._tenki = TenkiJp(config)
+        self._weather = Weather(config)
         self._route = Route(config)
+        self._sss = Sss(config)
+        self._events = Events(config)
+        self._opebirth = Opebirth(config)
 
     def get_response_data(self, channel, text: str) -> ResponseData:
         text = re.sub(r"^Reminder\s", "", text)
@@ -51,19 +57,41 @@ class MessageProcesser:
             return self._brave.search(m.group(1), search_type="video", site="nicovideo")
 
         # Weather
-        if m := re.match(r"^tenkiarea\s+(.+)$", text):
-            return self._tenki.search_area(m.group(1))
-        if m := re.match(r"^(?:tenki|weather)\s+(.+)$", text):
-            return self._tenki.search(m.group(1))
+        if m := re.match(r"^(?:weather|tenki)area\s+(.+)$", text):
+            return self._weather.search_area(m.group(1))
+        if m := re.match(r"^(?:weather|tenki)\s+(.+)$", text):
+            return self._weather.search(m.group(1))
 
         # Route
         if m := re.match(r"^(?:route|乗換|乗り換え|乗換え)\s+(\S+)\s+(\S+)(?:\s+(.+))?$", text):
             return self._route.search(m.group(1), m.group(2), m.group(3))
 
+        # Spreadsheet Search
+        if m := re.match(r"^sss\s+(\S+)\s+(.+)$", text, re.DOTALL):
+            return self._sss.search(m.group(1), m.group(2))
+
         # Omikuji
         if m := re.match(r"^omikuji(?:\s+(\w+))?$", text):
             omikuji_type = m.group(1) or "g1"
             return self._omikuji.draw(omikuji_type)
+
+        # Omikuji SS
+        if m := re.match(r"^ss-omikuji\s+(\S+)(?:\s+(.+))?$", text, re.DOTALL):
+            return self._sss.draw(m.group(1), m.group(2))
+        if m := re.match(r"^opekuji(?:\s+(.+))?$", text, re.DOTALL):
+            return self._sss.draw("ak", m.group(1))
+
+        # Events
+        if m := re.match(r"^event-register\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)$", text):
+            return self._events.regist(m.group(1), m.group(2), m.group(3), m.group(4))
+        if m := re.match(r"^event-remind\s+(\S+)(?:\s+(\S+))?$", text):
+            return self._events.reminder(m.group(1), m.group(2))
+        if m := re.match(r"^event-delete\s+(\S+)\s+(.+)$", text):
+            return self._events.delete(m.group(1), m.group(2))
+
+        # Opebirth
+        if m := re.match(r"^opebirth\s+(\S+)(?:\s+(\S+))?$", text):
+            return self._opebirth.search(m.group(1), m.group(2))
 
         # Dice
         if re.search(r"\[\d+[dD]\d+(?:[+-]\d+)?\]", text):

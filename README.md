@@ -21,11 +21,24 @@ cp .env-sample .env
 | `DISCORD_SERVERS` | 応答するチャンネルの設定（JSON） |
 | `BRAVE_SEARCH_API_KEY` | Brave Search API キー |
 | `OPENAI_API_KEY` | OpenAI API キー |
+| `SSS_SPREADSHEETS` | `sss` / `ss-omikuji` コマンドで使用するスプレッドシートの識別子→ID マップ（JSON） |
+| `EVENTS_SPREADSHEETS` | `event-register` / `event-remind` コマンドで使用するスプレッドシートの識別子→ID マップ（JSON） |
+| `GOOGLE_CLOUD_PROJECT` | Google Cloud プロジェクト ID（sss コマンド用 ADC） |
 
 ### DISCORD_SERVERS の設定例
 
 ```
 DISCORD_SERVERS={"チャンネルID": {"response_type": "default"}}
+```
+
+| フィールド | 説明 |
+|---|---|
+| `response_type` | レスポンス形式（省略時は `default`） |
+| `event_remind_label` | 毎日21:10（JST）に自動実行する `event-remind` の識別子。省略するとそのチャンネルでは実行されない |
+| `opebirth_label` | 毎日0時（JST）に自動実行する `opebirth` の識別子。省略するとそのチャンネルでは実行されない |
+
+```
+DISCORD_SERVERS={"チャンネルID": {"response_type": "default", "event_remind_label": "ak", "opebirth_label": "ak"}}
 ```
 
 チャンネル ID は Discord の URL `https://discord.com/channels/サーバーID/チャンネルID` の末尾の数字。
@@ -85,13 +98,11 @@ i <キーワード>
 [weather.tsukumijima.net](https://weather.tsukumijima.net/) から今日・明日の天気を取得する。
 
 ```
-tenki <地名>
 weather <地名>
 ```
 
 ```
-tenki 東京
-weather 大阪
+weather 東京
 ```
 
 #### エリア一覧
@@ -99,19 +110,150 @@ weather 大阪
 指定できる地名は都道府県ごとに確認できる。
 
 ```
-tenkiarea <都道府県名>
+weatherarea <都道府県名>
 ```
 
 ```
-tenkiarea 東京都
+weatherarea 東京都
 → 東京, 大島, 八丈島, 父島
 ```
 
 ---
 
+### スプレッドシート検索
+
+Google スプレッドシートから条件指定で検索し、一致した行の1列目の値を返す。
+認証は Application Default Credentials (ADC) を使用する。
+
+```
+sss <識別子> <条件>...
+```
+
+```
+sss ak 陣営=ライン生命　性別=女
+sss ak 陣営=ライン生命、バベル　性別=女　職業=先鋒
+```
+
+#### 識別子の設定
+
+`.env` の `SSS_SPREADSHEETS` に JSON 形式で定義する。
+
+```
+SSS_SPREADSHEETS={"ak": {"id": "スプレッドシートID", "sheet": "シート名"}}
+```
+
+- スプレッドシート ID は URL の `/d/{ID}/` の部分
+- `sheet` を省略すると1枚目のシートを使用
+- 複数シートを指定する場合は識別子ごとに `sheet` を変える
+
+#### 検索条件の書式
+
+| 書式 | 説明 |
+|---|---|
+| `列名=値` | 指定列に値が部分一致する行を絞り込む |
+| `列名=値1,値2` | 全角・半角カンマで区切るとOR条件 |
+| 複数条件をスペースで区切る | 全角・半角スペースで区切るとAND条件 |
+
+#### 動作
+
+- 1行目をヘッダー行として列名に使用する
+- 条件に一致した行の1列目の値を `, ` で連結して返す
+
+#### スプレッドシートおみくじ
+
+`SSS_SPREADSHEETS` で定義したシートからランダムで1行取得して返す。条件を指定すると絞り込んだ中からランダム取得する。
+
+```
+ss-omikuji <識別子> [条件]...
+opekuji [条件]...          # ss-omikuji ak のエイリアス
+```
+
+```
+ss-omikuji ak
+ss-omikuji ak 陣営=ライン生命　性別=女
+opekuji
+opekuji 陣営=ライン生命　性別=女
+```
+
+条件の書式は `sss` コマンドと同じ。
+
+---
+
+### イベント管理
+
+`EVENTS_SPREADSHEETS` で定義したシートにイベントを登録・リマインドする。
+シートの1行目はヘッダー行（列名）として使用する。
+
+#### イベント登録
+
+```
+event-register <識別子> <イベント名> <開始日> <終了日>
+```
+
+```
+event-register ak イベント名 20260301 20260326
+event-register ak イベント名 2026-03-01 2026-03-26
+```
+
+- 日付は `yyyymmdd` または `yyyy-mm-dd` 形式
+- 登録先の列1〜3に、イベント名・開始日（yyyy/mm/dd）・終了日（yyyy/mm/dd）を書き込む
+- イベント名が重複する場合は登録せずにその旨を返す
+
+#### イベントリマインダー
+
+翌日に終了するイベントを通知する。「終了日」列を参照する。
+
+```
+event-remind <識別子> [日付]
+```
+
+```
+event-remind ak
+event-remind ak 20260325
+```
+
+- 日付を省略すると現在日を基準に翌日を検索
+- 日付は `yyyymmdd` または `yyyy-mm-dd` 形式（テスト用）
+- `DISCORD_SERVERS` の `event_remind_label` を設定すると毎日10時（JST）に自動実行
+
+#### イベント削除
+
+```
+event-delete <識別子> <イベント名>
+```
+
+```
+event-delete ak イベント名
+```
+
+- 1列目がイベント名と一致する行を削除する
+- 該当するイベントがない場合はその旨を返す
+
+---
+
+### 誕生日通知
+
+`SSS_SPREADSHEETS` で定義したシートの「誕生日」列を検索し、本日が誕生日のコードネームを返す。
+
+```
+opebirth <識別子> [日付]
+```
+
+```
+opebirth ak
+opebirth ak 0326
+```
+
+- 「誕生日」列の `M月D日` 形式（例: `3月26日`）と一致する行を取得する
+- 日付を省略すると現在日を使用
+- 日付は `mmdd` または `mm-dd` 形式（テスト用）
+- `DISCORD_SERVERS` の `opebirth_label` を設定すると毎日0時（JST）に自動実行
+
+---
+
 ### 乗換案内
 
-Navitime から経路を検索する。
+Yahoo!路線情報から経路を検索する。
 
 ```
 route <出発地> <目的地> [オプション]

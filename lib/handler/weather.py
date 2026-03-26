@@ -22,7 +22,7 @@ _pref_map: Optional[dict[str, list[str]]] = None
 def _load_default_templates() -> dict[str, Any]:
     try:
         with open(_TEMPLATE_FILE) as f:
-            return (yaml.safe_load(f) or {}).get("tenki_jp", {}).get("templates") or {}
+            return (yaml.safe_load(f) or {}).get("weather", {}).get("templates") or {}
     except Exception:
         logger.exception("template.yml の読み込みエラー")
         return {}
@@ -78,9 +78,9 @@ def _find_city_id(area_name: str) -> Optional[str]:
 _DEFAULT_TEMPLATES = _load_default_templates()
 
 
-class TenkiJp:
+class Weather:
     def __init__(self, config: dict):
-        self._templates = config.get("tenki_jp", {}).get("templates") or _DEFAULT_TEMPLATES
+        self._templates = config.get("weather", {}).get("templates") or _DEFAULT_TEMPLATES
 
     def search(self, area_name: str) -> ResponseData:
         response_data = ResponseData()

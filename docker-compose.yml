@@ -5,6 +5,9 @@ services:
       - .env
     environment:
       - TZ=Asia/Tokyo
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+    volumes:
+      - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
     depends_on:
       - redis
     restart: unless-stopped
@@ -14,3 +17,15 @@ services:
     environment:
       - TZ=Asia/Tokyo
     restart: unless-stopped
+
+  ak-operators:
+    build: .
+    profiles: [tools]
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Tokyo
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+    volumes:
+      - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
+    command: ["python", "tool/ak_operators.py"]

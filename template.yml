@@ -1,10 +1,22 @@
-tenki_jp:
+weather:
   templates:
     default: |
       {% for w in data.weather %}{{ w.date }}の{{ data.area_name }}の天気：{{ w.weather }}
       {{ w.hightemp }}/{{ w.lowtemp }}
       降水確率：{{ w.rain_probability | join('/') }}
       {% endfor %}{% if data.rains %}傘持ってけー{% endif %}
+
+event_reminder:
+  templates:
+    default: |
+      {% for event in data.events %}{{ event }}は間もなく終了します。お忘れなく。
+      {% endfor %}
+
+opebirth:
+  templates:
+    default: |
+      {% for name in data.names %}本日は{{ name }}の誕生日です。おめでとうございます！
+      {% endfor %}
 
 omikuji:
   unsei:

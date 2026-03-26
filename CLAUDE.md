@@ -5,5 +5,9 @@ Discord上で動作するチャットボット
 - docker
 - Python3
 
-## 改修時に
-README.mdも更新してください。
+## must do
+paths: lib/*
+- update README.md
+
+paths: tool/*
+- update tool/README.md

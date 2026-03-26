@@ -6,3 +6,5 @@ openai>=1.0
 redis>=5.0
 beautifulsoup4>=4.12
 requests>=2.31
+gspread>=5.12
+google-auth>=2.0
