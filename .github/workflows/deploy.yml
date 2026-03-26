@@ -6,6 +6,8 @@ jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
       - name: Deploy to EC2
         uses: appleboy/ssh-action@v1
         with:
@@ -14,8 +16,6 @@ jobs:
           key: ${{ secrets.EC2_SSH_KEY }}
           script: |
             cd /home/${{ secrets.EC2_USER }}/chatbot
-            git fetch --all
-            git reset --hard origin/main
             docker compose build --no-cache
             docker compose up -d
             docker compose logs --tail=20 chatbot
