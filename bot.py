@@ -120,12 +120,19 @@ async def on_message(message: discord.Message):
         return
 
     channel_id = message.channel.id
+    guild_id = message.guild.id if message.guild else None
+    # チャンネルID優先、なければサーバーIDで判定
+    if str(channel_id) in servers:
+        channel_config: dict[str, str] = servers[str(channel_id)]
+    elif guild_id and str(guild_id) in servers:
+        channel_config = servers[str(guild_id)]
+    else:
+        return
     response_data = processer.get_response_data(channel=channel_id, text=message.content)
 
     if response_data.error_message:
         await message.channel.send(response_data.error_message)
     elif response_data.data is not None:
-        channel_config: dict[str, str] = servers.get(str(channel_id), {})
         response_type = channel_config.get("response_type", "default")
         response = formatter.get_response(response_data=response_data, response_type=response_type)
         while response:

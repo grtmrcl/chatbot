@@ -31,17 +31,23 @@ cp .env-sample .env
 DISCORD_SERVERS={"チャンネルID": {"response_type": "default"}}
 ```
 
+キーにはチャンネルIDとサーバー（ギルド）IDを混在させることができる。チャンネルIDが優先される。
+
+```
+DISCORD_SERVERS={"サーバーID": {"response_type": "default"}, "特定チャンネルID": {"response_type": "special"}}
+```
+
 | フィールド | 説明 |
 |---|---|
 | `response_type` | レスポンス形式（省略時は `default`） |
-| `event_remind_label` | 毎日21:10（JST）に自動実行する `event-remind` の識別子。省略するとそのチャンネルでは実行されない |
+| `event_remind_label` | 毎日10時（JST）に自動実行する `event-remind` の識別子。省略するとそのチャンネルでは実行されない |
 | `opebirth_label` | 毎日0時（JST）に自動実行する `opebirth` の識別子。省略するとそのチャンネルでは実行されない |
 
 ```
 DISCORD_SERVERS={"チャンネルID": {"response_type": "default", "event_remind_label": "ak", "opebirth_label": "ak"}}
 ```
 
-チャンネル ID は Discord の URL `https://discord.com/channels/サーバーID/チャンネルID` の末尾の数字。
+チャンネル ID・サーバー ID は Discord の URL `https://discord.com/channels/サーバーID/チャンネルID` から確認できる。
 
 ## 起動
 
