@@ -14,7 +14,7 @@ from lib.message_formatter import MessageFormatter
 load_dotenv()
 
 logging.basicConfig(
-    level=logging.INFO,
+    level=logging.DEBUG,
     format="%(asctime)s [%(levelname)s] %(name)s: %(message)s",
 )
 
@@ -121,12 +121,14 @@ async def on_message(message: discord.Message):
 
     channel_id = message.channel.id
     guild_id = message.guild.id if message.guild else None
+    logger.debug("メッセージ受信: channel_id=%s guild_id=%s servers=%s", channel_id, guild_id, list(servers.keys()))
     # チャンネルID優先、なければサーバーIDで判定
     if str(channel_id) in servers:
         channel_config: dict[str, str] = servers[str(channel_id)]
     elif guild_id and str(guild_id) in servers:
         channel_config = servers[str(guild_id)]
     else:
+        logger.debug("対象外のため無視: channel_id=%s guild_id=%s", channel_id, guild_id)
         return
     response_data = processer.get_response_data(channel=channel_id, text=message.content)
 
