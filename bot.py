@@ -71,17 +71,27 @@ def _resolve_channel(channel_id_str: str, channel_config: dict[str, str]):
 @tasks.loop(time=datetime.time(10, 0, tzinfo=JST))
 async def daily_event_remind():
     for channel_id_str, channel_config in servers.items():
-        label = channel_config.get("event_remind_label")
-        if not label:
+        label_value = channel_config.get("event_remind_label")
+        if not label_value:
             continue
-        response_data = processer._events.reminder(label)
-        if response_data.error_message:
-            logger.error("event-remind エラー channel=%s: %s", channel_id_str, response_data.error_message)
+        labels = label_value if isinstance(label_value, list) else [label_value]
+
+        all_events: list[str] = []
+        last_response_data = None
+        for label in labels:
+            rd = processer._events.reminder(label)
+            if rd.error_message:
+                logger.error("event-remind エラー channel=%s label=%s: %s", channel_id_str, label, rd.error_message)
+                continue
+            last_response_data = rd
+            if rd.data:
+                all_events.extend(rd.data.get("events", []))
+
+        if not all_events or last_response_data is None:
             continue
-        if response_data.data is None:
-            continue
+        last_response_data.data = {"events": all_events}
         response_type = channel_config.get("response_type", "default")
-        response = formatter.get_response(response_data=response_data, response_type=response_type)
+        response = formatter.get_response(response_data=last_response_data, response_type=response_type)
         if not response:
             continue
         channel = _resolve_channel(channel_id_str, channel_config)
@@ -96,17 +106,27 @@ async def daily_event_remind():
 @tasks.loop(time=datetime.time(0, 0, tzinfo=JST))
 async def daily_opebirth():
     for channel_id_str, channel_config in servers.items():
-        label = channel_config.get("opebirth_label")
-        if not label:
+        label_value = channel_config.get("opebirth_label")
+        if not label_value:
             continue
-        response_data = processer._opebirth.search(label)
-        if response_data.error_message:
-            logger.error("opebirth エラー channel=%s: %s", channel_id_str, response_data.error_message)
+        labels = label_value if isinstance(label_value, list) else [label_value]
+
+        all_names: list[str] = []
+        last_response_data = None
+        for label in labels:
+            rd = processer._opebirth.search(label)
+            if rd.error_message:
+                logger.error("opebirth エラー channel=%s label=%s: %s", channel_id_str, label, rd.error_message)
+                continue
+            last_response_data = rd
+            if rd.data:
+                all_names.extend(rd.data.get("names", []))
+
+        if not all_names or last_response_data is None:
             continue
-        if response_data.data is None:
-            continue
+        last_response_data.data = {"names": all_names}
         response_type = channel_config.get("response_type", "default")
-        response = formatter.get_response(response_data=response_data, response_type=response_type)
+        response = formatter.get_response(response_data=last_response_data, response_type=response_type)
         if not response:
             continue
         channel = _resolve_channel(channel_id_str, channel_config)

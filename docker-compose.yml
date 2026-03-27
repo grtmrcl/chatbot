@@ -28,4 +28,28 @@ services:
       - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
     volumes:
       - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
-    command: ["python", "tool/ak_operators.py"]
+    command: ["python", "tool/operators.py", "--source", "ak"]
+
+  ef-operators:
+    build: .
+    profiles: [tools]
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Tokyo
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+    volumes:
+      - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
+    command: ["python", "tool/operators.py", "--source", "ef"]
+
+  operators:
+    build: .
+    profiles: [tools]
+    env_file:
+      - .env
+    environment:
+      - TZ=Asia/Tokyo
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+    volumes:
+      - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
+    command: ["sh", "-c", "python tool/operators.py --source ak && python tool/operators.py --source ef"]

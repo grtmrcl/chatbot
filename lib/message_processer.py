@@ -92,6 +92,10 @@ class MessageProcesser:
             return self._events.delete(m.group(1), m.group(2))
 
         # Opebirth
+        if re.match(r"^opebirth$", text):
+            return self._opebirth.search_all()
+        if m := re.match(r"^opebirth\s+(\d{4}|\d{2}-\d{2})$", text):
+            return self._opebirth.search_all(m.group(1))
         if m := re.match(r"^opebirth\s+(\S+)(?:\s+(\S+))?$", text):
             return self._opebirth.search(m.group(1), m.group(2))
 

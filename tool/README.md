@@ -1,8 +1,15 @@
 # ツール一覧
 
-## ak_operators.py
+## operators.py
 
-アークナイツ キャラクター一覧ページからプロフィール情報を取得し、スプレッドシートに書き込むツール。
+オペレーター一覧ページからプロフィール情報を取得し、スプレッドシートに書き込むツール。
+
+`--source` オプションで取得元を切り替えられる。
+
+| ソースキー | 対象 | 環境変数 |
+|---|---|---|
+| `ak` | アークナイツ (arknights.wikiru.jp) | `AK_OPERATORS_SPREADSHEET` |
+| `ef` | アークナイツ エンドフィールド (arknights-endfield.wikiru.jp) | `EF_OPERATORS_SPREADSHEET` |
 
 ### 事前準備
 
@@ -50,12 +57,22 @@ GOOGLE_CLOUD_QUOTA_PROJECT=your-project-id
 3. `.env` に設定する
 
 ```
-AK_OPERATORS_SPREADSHEET_ID=コピーしたID
+# JSON形式でIDとシート名を同時に指定（sheet を省略すると1枚目のシートを使用）
+AK_OPERATORS_SPREADSHEET={"id": "SpreadsheetID", "sheet": "シート名"}
+EF_OPERATORS_SPREADSHEET={"id": "SpreadsheetID", "sheet": "シート名"}
 ```
 
 ### 実行
 
 ```bash
 docker compose --profile tools build --no-cache
+
+# AK・EF 両方を実行
+docker compose --profile tools run --rm operators
+
+# アークナイツのみ
 docker compose --profile tools run --rm ak-operators
+
+# アークナイツ エンドフィールドのみ
+docker compose --profile tools run --rm ef-operators
 ```

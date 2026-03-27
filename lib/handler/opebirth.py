@@ -40,6 +40,37 @@ def _parse_month_day(date_str: str) -> Optional[tuple[int, int]]:
     return None
 
 
+def _extract_month_day_from_cell(cell: str) -> Optional[tuple[int, int]]:
+    """セルの誕生日文字列から (month, day) を抽出する。
+    対応フォーマット:
+      - X月Y日 (例: 3月27日)
+      - yyyy/m/d (例: 2000/3/27)
+      - m/d (例: 3/27)
+    """
+    cell = cell.strip()
+    # X月Y日
+    if "月" in cell and "日" in cell:
+        try:
+            month_part, rest = cell.split("月")
+            day_part = rest.rstrip("日")
+            return (int(month_part), int(day_part))
+        except (ValueError, AttributeError):
+            return None
+    # スラッシュ区切り
+    if "/" in cell:
+        parts = cell.split("/")
+        try:
+            if len(parts) == 3:
+                # yyyy/m/d
+                return (int(parts[1]), int(parts[2]))
+            elif len(parts) == 2:
+                # m/d
+                return (int(parts[0]), int(parts[1]))
+        except ValueError:
+            return None
+    return None
+
+
 class Opebirth:
     def __init__(self, config: dict):
         self._spreadsheets: dict[str, str | dict] = config.get("sss", {}).get("spreadsheets", {})
@@ -62,7 +93,8 @@ class Opebirth:
         wb = self._get_client().open_by_key(sheet_id)
         return wb.worksheet(sheet_name) if sheet_name else wb.sheet1
 
-    def search(self, label: str, date_str: Optional[str] = None) -> ResponseData:
+    def search_all(self, date_str: Optional[str] = None) -> ResponseData:
+        """設定ファイルのすべての識別子に対して検索を実行する。"""
         response_data = ResponseData()
         response_data.templates = _TEMPLATES
 
@@ -76,7 +108,47 @@ class Opebirth:
             today = date.today()
             month, day = today.month, today.day
 
-        target_str = f"{month}月{day}日"
+        all_names: list[str] = []
+        for label in self._spreadsheets:
+            try:
+                sheet = self._get_sheet(label)
+                if sheet is None:
+                    continue
+                all_values = sheet.get_all_values()
+                if not all_values:
+                    continue
+                headers = all_values[0]
+                birth_col_idx = next((i for i, h in enumerate(headers) if h == "誕生日"), None)
+                if birth_col_idx is None:
+                    continue
+                names = [
+                    row[0]
+                    for row in all_values[1:]
+                    if len(row) > birth_col_idx
+                    and row[0]
+                    and _extract_month_day_from_cell(row[birth_col_idx]) == (month, day)
+                ]
+                all_names.extend(names)
+            except Exception:
+                logger.exception("opebirth エラー (label=%s)", label)
+
+        if all_names:
+            response_data.data = {"names": all_names}
+        return response_data
+
+    def search(self, label: str, date_str: Optional[str] = None) -> ResponseData:
+        response_data = ResponseData()
+        response_data.templates = _TEMPLATES
+
+        if date_str:
+            md = _parse_month_day(date_str)
+            if md is None:
+                response_data.error_message = f"日付の形式が正しくありません: {date_str}（mmdd または mm-dd）"
+                return response_data
+            month, day = md
+        else:
+            today = date.today()
+            month, day = today.month, today.day
 
         try:
             sheet = self._get_sheet(label)
@@ -97,7 +169,9 @@ class Opebirth:
             names = [
                 row[0]
                 for row in all_values[1:]
-                if len(row) > birth_col_idx and row[birth_col_idx] == target_str and row[0]
+                if len(row) > birth_col_idx
+                and row[0]
+                and _extract_month_day_from_cell(row[birth_col_idx]) == (month, day)
             ]
 
             if names:
