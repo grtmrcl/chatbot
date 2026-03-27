@@ -67,6 +67,7 @@ class BraveSearch:
             return response_data
 
     def _web_search(self, query: str, headers: dict) -> tuple[str, str]:
+        logger.info("fetch: %s q=%s", WEB_SEARCH_URL, query)
         res = requests.get(
             WEB_SEARCH_URL,
             params={"q": query, "count": 1},
@@ -81,6 +82,7 @@ class BraveSearch:
         return item.get("title", ""), item.get("url", "")
 
     def _image_search(self, query: str, headers: dict) -> str:
+        logger.info("fetch: %s q=%s", IMAGE_SEARCH_URL, query)
         res = requests.get(
             IMAGE_SEARCH_URL,
             params={"q": query, "count": 10},
@@ -95,6 +97,7 @@ class BraveSearch:
         return item.get("properties", {}).get("url") or item.get("image", {}).get("src", "")
 
     def _video_search(self, query: str, headers: dict) -> tuple[str, str]:
+        logger.info("fetch: %s q=%s", VIDEO_SEARCH_URL, query)
         res = requests.get(
             VIDEO_SEARCH_URL,
             params={"q": query, "count": 1},

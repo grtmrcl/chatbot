@@ -46,10 +46,15 @@ class Route:
         type_ = "4"
 
         if options:
-            date_m = re.search(r"\b(\d{8})\b", options)
+            date_m = re.search(r"(?<!\d)(\d{8})(?!\d)", options)
             if date_m:
                 s = date_m.group(1)
                 year, month, day = int(s[:4]), int(s[4:6]), int(s[6:8])
+
+            time_m = re.search(r"(?<!\d)(\d{4})(?!\d)", options)
+            if time_m:
+                s = time_m.group(1)
+                hour, minute = int(s[:2]), int(s[2:4])
 
             for key, value in TYPE_MAP.items():
                 if key in options:
@@ -57,11 +62,8 @@ class Route:
                     break
 
             # 始発・終電は時刻指定不可
-            if type_ not in ("8", "16"):
-                time_m = re.search(r"\b(\d{4})\b", options)
-                if time_m:
-                    s = time_m.group(1)
-                    hour, minute = int(s[:2]), int(s[2:4])
+            if type_ in ("8", "16"):
+                hour, minute = now.hour, now.minute
 
         minute_str = f"{minute:02d}"
         return {
@@ -102,6 +104,7 @@ class Route:
                 "sr": "1",
             }
 
+            logger.info("fetch: %s from=%s to=%s", SEARCH_URL, dep, arr)
             res = requests.get(SEARCH_URL, params=params, headers=HEADERS, timeout=15)
             res.raise_for_status()
             soup = BeautifulSoup(res.text, "html.parser")

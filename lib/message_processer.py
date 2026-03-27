@@ -57,12 +57,14 @@ class MessageProcesser:
             return self._brave.search(m.group(1), search_type="video", site="nicovideo")
 
         # Weather
-        if m := re.match(r"^(?:weather|tenki)area\s+(.+)$", text):
+        if m := re.match(r"^(?:weather|tenki|天気)area\s+(.+)$", text):
             return self._weather.search_area(m.group(1))
-        if m := re.match(r"^(?:weather|tenki)\s+(.+)$", text):
+        if m := re.match(r"^(?:weather|tenki|天気)\s+(.+)$", text):
             return self._weather.search(m.group(1))
 
         # Route
+        if m := re.match(r"^(?:route|乗換|乗り換え|乗換え)\s+(\S+?)から(\S+)(?:\s+(.+))?$", text):
+            return self._route.search(m.group(1), m.group(2), m.group(3))
         if m := re.match(r"^(?:route|乗換|乗り換え|乗換え)\s+(\S+)\s+(\S+)(?:\s+(.+))?$", text):
             return self._route.search(m.group(1), m.group(2), m.group(3))
 

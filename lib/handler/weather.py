@@ -29,6 +29,7 @@ def _load_default_templates() -> dict[str, Any]:
 
 
 def _fetch_area_xml() -> ElementTree.Element:
+    logger.info("fetch: %s", AREA_XML_URL)
     res = requests.get(AREA_XML_URL, timeout=10)
     res.raise_for_status()
     return ElementTree.fromstring(res.content)
@@ -91,6 +92,7 @@ class Weather:
                 response_data.error_message = f"「{area_name}」の天気情報が見つかりませんでした。"
                 return response_data
 
+            logger.info("fetch: %s?city=%s", FORECAST_URL, city_id)
             res = requests.get(FORECAST_URL, params={"city": city_id}, timeout=10)
             res.raise_for_status()
             data = res.json()
