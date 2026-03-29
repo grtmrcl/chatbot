@@ -2,6 +2,7 @@ import datetime
 import json
 import logging
 import os
+import re
 import zoneinfo
 
 import discord
@@ -161,6 +162,19 @@ async def on_message(message: discord.Message):
         channel_config = servers[str(guild_id)]
     else:
         return
+    # bot自身のメッセージを削除するコマンド: purge <件数>
+    if m := re.match(r"^purge\s+(\d+)$", message.content.strip()):
+        count = int(m.group(1))
+        await message.delete()
+        deleted = 0
+        async for msg in message.channel.history(limit=500):
+            if msg.author == client.user:
+                await msg.delete()
+                deleted += 1
+                if deleted >= count:
+                    break
+        return
+
     response_data = processer.get_response_data(channel=channel_id, text=message.content)
 
     if response_data.error_message:
