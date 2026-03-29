@@ -165,7 +165,10 @@ async def on_message(message: discord.Message):
     # bot自身のメッセージを削除するコマンド: purge <件数>
     if m := re.match(r"^purge\s+(\d+)$", message.content.strip()):
         count = int(m.group(1))
-        await message.delete()
+        try:
+            await message.delete()
+        except discord.Forbidden:
+            pass
         deleted = 0
         async for msg in message.channel.history(limit=500):
             if msg.author == client.user:
