@@ -63,6 +63,16 @@ SOURCES: dict[str, dict] = {
 }
 
 
+def _is_hidden(tag) -> bool:
+    """タグまたはその祖先がデフォルトで非表示かどうかを判定する"""
+    for el in [tag, *tag.parents]:
+        style = el.get("style", "") if hasattr(el, "get") else ""
+        normalized = style.replace(" ", "").lower()
+        if "display:none" in normalized or "visibility:hidden" in normalized:
+            return True
+    return False
+
+
 def fetch_operator_urls(source: dict) -> list[str]:
     """一覧ページの各セクションからオペレーターURLを取得する"""
     res = requests.get(source["list_url"], timeout=15)
@@ -90,7 +100,7 @@ def fetch_operator_urls(source: dict) -> list[str]:
         for sibling in heading.find_all_next():
             if sibling.get("id") in stop_ids and sibling.get("id") != section_id:
                 break
-            if sibling.name == "a":
+            if sibling.name == "a" and not _is_hidden(sibling):
                 href = sibling.get("href", "")
                 if href and href.startswith(link_prefix) and not any(c in href for c in ["#", "="]):
                     full_url = urljoin(base_url, href)
