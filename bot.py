@@ -162,9 +162,9 @@ async def on_message(message: discord.Message):
         channel_config = servers[str(guild_id)]
     else:
         return
-    # bot自身のメッセージを削除するコマンド: purge <件数>
-    if m := re.match(r"^purge\s+(\d+)$", message.content.strip()):
-        count = int(m.group(1))
+    # bot自身のメッセージを削除するコマンド: purge [件数] (デフォルト: 1)
+    if m := re.match(r"^purge(?:\s+(\d+))?$", message.content.strip()):
+        count = int(m.group(1)) if m.group(1) else 1
         try:
             await message.delete()
         except discord.Forbidden:
