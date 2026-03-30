@@ -278,6 +278,8 @@ SSS_SPREADSHEETS={"ak": {"id": "スプレッドシートID", "sheet": "シート
 ```
 ss-omikuji <識別子> [条件]...
 opekuji [条件]...          # ss-omikuji ak のエイリアス
+オペくじ [条件]...         # ss-omikuji ak のエイリアス
+ef-opekuji [条件]...       # ss-omikuji ef のエイリアス
 ```
 
 ```
@@ -285,6 +287,10 @@ ss-omikuji ak
 ss-omikuji ak 陣営=ライン生命　性別=女
 opekuji
 opekuji 陣営=ライン生命　性別=女
+オペくじ
+オペくじ 陣営=ライン生命　性別=女
+ef-opekuji
+ef-opekuji 陣営=ライン生命　性別=女
 ```
 
 条件の書式は `sss` コマンドと同じ。

@@ -80,8 +80,10 @@ class MessageProcesser:
         # Omikuji SS
         if m := re.match(r"^ss-omikuji\s+(\S+)(?:\s+(.+))?$", text, re.DOTALL):
             return self._sss.draw(m.group(1), m.group(2))
-        if m := re.match(r"^opekuji(?:\s+(.+))?$", text, re.DOTALL):
+        if m := re.match(r"^(?:opekuji|オペくじ)(?:\s+(.+))?$", text, re.DOTALL):
             return self._sss.draw("ak", m.group(1))
+        if m := re.match(r"^ef-opekuji(?:\s+(.+))?$", text, re.DOTALL):
+            return self._sss.draw("ef", m.group(1))
 
         # Events
         if m := re.match(r"^event-register\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)$", text):
