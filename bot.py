@@ -77,7 +77,7 @@ async def daily_event_remind():
             continue
         labels = label_value if isinstance(label_value, list) else [label_value]
 
-        all_events: list[str] = []
+        all_events: list[dict] = []
         last_response_data = None
         for label in labels:
             rd = processer._events.reminder(label)

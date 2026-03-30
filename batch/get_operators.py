@@ -3,8 +3,8 @@
 オペレーター プロフィール一覧 スプレッドシート書き込みツール
 
 usage:
-    python tool/operators.py --source ak
-    python tool/operators.py --source ef
+    python batch/get_operators.py --source ak
+    python batch/get_operators.py --source ef
 
 環境変数(.env):
     AK_OPERATORS_SPREADSHEET  : AK 書き込み先（JSON: {"id": "...", "sheet": "..."} または スプレッドシートID文字列）

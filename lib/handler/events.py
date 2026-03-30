@@ -139,7 +139,11 @@ class Events:
         else:
             base_date = date.today()
 
-        target_date = (base_date + timedelta(days=1)).strftime(DATE_OUTPUT_FORMAT)
+        notify_days = [1, 3]
+        target_dates = {
+            days: (base_date + timedelta(days=days)).strftime(DATE_OUTPUT_FORMAT)
+            for days in notify_days
+        }
 
         try:
             sheet = self._get_sheet(label)
@@ -157,11 +161,11 @@ class Events:
                 response_data.error_message = "「終了日」列が見つかりません。"
                 return response_data
 
-            events = [
-                row[0]
-                for row in all_values[1:]
-                if len(row) > end_col_idx and row[end_col_idx] == target_date and row[0]
-            ]
+            events = []
+            for days, target_date in target_dates.items():
+                for row in all_values[1:]:
+                    if len(row) > end_col_idx and row[end_col_idx] == target_date and row[0]:
+                        events.append({"name": row[0], "days": days})
 
             if events:
                 response_data.data = {"events": events}

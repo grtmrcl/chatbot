@@ -9,5 +9,5 @@ Discord上で動作するチャットボット
 paths: lib/*
 - update README.md
 
-paths: tool/*
-- update tool/README.md
+paths: batch/*
+- update batch/README.md

@@ -1,0 +1,9 @@
+# chatbot バッチ処理 crontab 設定例
+# crontab -e で編集し、以下を追加する
+# /path/to/chatbot はこのリポジトリの絶対パスに置き換えること
+
+# オペレーター情報更新: 毎週木曜 11:15
+15 11 * * 4 cd /path/to/chatbot && docker compose --profile batch run --rm operators >> /var/log/chatbot-batch.log 2>&1
+
+# イベント情報更新: 毎日 11:45
+45 11 * * * cd /path/to/chatbot && docker compose --profile batch run --rm events >> /var/log/chatbot-batch.log 2>&1

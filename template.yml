@@ -9,7 +9,7 @@ weather:
 event_reminder:
   templates:
     default: |
-      {% for event in data.events %}{{ event }}は間もなく終了します。お忘れなく。
+      {% for event in data.events %}{% if event.days == 1 %}{{ event.name }}は明日終了します。お忘れなく。{% else %}{{ event.name }}は{{ event.days }}日後に終了します。お忘れなく。{% endif %}
       {% endfor %}
 
 opebirth:
