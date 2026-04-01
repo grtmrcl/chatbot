@@ -141,7 +141,7 @@ async def daily_opebirth():
 
 @client.event
 async def on_ready():
-    print(f"Logged in as {client.user}")
+    logger.info("Logged in as %s", client.user)
     if not daily_event_remind.is_running():  # type: ignore[union-attr]
         daily_event_remind.start()  # type: ignore[union-attr]
     if not daily_opebirth.is_running():  # type: ignore[union-attr]
@@ -163,16 +163,26 @@ async def on_message(message: discord.Message):
     else:
         return
     # bot自身のメッセージを削除するコマンド: purge [件数] (デフォルト: 1)
+    # 管理者権限またはメッセージ管理権限を持つユーザーのみ実行可能
     if m := re.match(r"^purge(?:\s+(\d+))?$", message.content.strip()):
+        if not message.author.guild_permissions.manage_messages:
+            return
         count = int(m.group(1)) if m.group(1) else 1
         try:
             await message.delete()
         except discord.Forbidden:
             pass
+
+        def is_bot(msg: discord.Message) -> bool:
+            return msg.author == client.user
+
         deleted = 0
         async for msg in message.channel.history(limit=500):
-            if msg.author == client.user:
-                await msg.delete()
+            if is_bot(msg):
+                try:
+                    await msg.delete()
+                except discord.Forbidden:
+                    break
                 deleted += 1
                 if deleted >= count:
                     break

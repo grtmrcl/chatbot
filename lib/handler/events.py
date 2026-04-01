@@ -40,7 +40,7 @@ def _parse_date(date_str: str) -> Optional[date]:
 
 
 class Events:
-    REGIST_TEMPLATES = {"default": "{{ data.message }}"}
+    REGISTER_TEMPLATES = {"default": "{{ data.message }}"}
 
     def __init__(self, config: dict):
         self._spreadsheets: dict[str, str | dict] = config.get("events", {}).get("spreadsheets", {})
@@ -63,9 +63,9 @@ class Events:
         wb = self._get_client().open_by_key(sheet_id)
         return wb.worksheet(sheet_name) if sheet_name else wb.sheet1
 
-    def regist(self, label: str, event_name: str, start_str: str, end_str: str) -> ResponseData:
+    def register(self, label: str, event_name: str, start_str: str, end_str: str) -> ResponseData:
         response_data = ResponseData()
-        response_data.templates = self.REGIST_TEMPLATES
+        response_data.templates = self.REGISTER_TEMPLATES
 
         start = _parse_date(start_str)
         if start is None:
@@ -103,7 +103,7 @@ class Events:
 
     def delete(self, label: str, event_name: str) -> ResponseData:
         response_data = ResponseData()
-        response_data.templates = self.REGIST_TEMPLATES
+        response_data.templates = self.REGISTER_TEMPLATES
 
         try:
             sheet = self._get_sheet(label)

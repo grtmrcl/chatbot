@@ -14,7 +14,7 @@ class RedisWrapper:
         self._client.set(self._prefix + key, value)
 
     def keys(self) -> list[str]:
-        return [k.decode() for k in self._client.keys(self._prefix + "*")]  # type: ignore[union-attr]
+        return [k.decode() for k in self._client.scan_iter(self._prefix + "*")]  # type: ignore[union-attr]
 
     def del_(self, key: str):
         self._client.delete(self._prefix + key)

@@ -28,22 +28,6 @@ class MessageProcesser:
     def get_response_data(self, channel, text: str) -> ResponseData:
         text = re.sub(r"^Reminder\s", "", text)
 
-        # ChatGPT
-        # if re.match(r"^gpt\s+list$", text):
-        #     return self._chatgpt.list(channel)
-        # if m := re.match(r"^gpt\s+detail\s+(\d+)$", text):
-        #     return self._chatgpt.detail(m.group(1), channel)
-        # if m := re.match(r"^gpt\s+id\s+(\d+)$", text):
-        #     return self._chatgpt.set_talk_id(m.group(1), channel)
-        # if m := re.match(r"^gpt\s+delete\s+(\d+)$", text):
-        #     return self._chatgpt.delete(m.group(1), channel)
-        # if re.match(r"^gpt\s+clear$", text):
-        #     return self._chatgpt.clear(channel)
-        # if m := re.match(r"^gpt\s+system\s+(.+)$", text, re.DOTALL):
-        #     return self._chatgpt.system(m.group(1), channel)
-        # if m := re.match(r"^gpt\s+(.+)$", text, re.DOTALL):
-        #     return self._chatgpt.chat(m.group(1), channel)
-
         # Brave Search
         if m := re.match(r"^(?:google|brave|g)\s+(.+)$", text):
             return self._brave.search(m.group(1))
@@ -87,14 +71,14 @@ class MessageProcesser:
 
         # Events
         if m := re.match(r"^event-register\s+(\S+)\s+(\S+)\s+(\S+)\s+(\S+)$", text):
-            return self._events.regist(m.group(1), m.group(2), m.group(3), m.group(4))
+            return self._events.register(m.group(1), m.group(2), m.group(3), m.group(4))
         if m := re.match(r"^event-remind\s+(\S+)(?:\s+(\S+))?$", text):
             return self._events.reminder(m.group(1), m.group(2))
         if m := re.match(r"^event-delete\s+(\S+)\s+(.+)$", text):
             return self._events.delete(m.group(1), m.group(2))
 
         # Opebirth
-        if re.match(r"^opebirth$", text):
+        if text == "opebirth":
             return self._opebirth.search_all()
         if m := re.match(r"^opebirth\s+(\d{4}|\d{2}-\d{2})$", text):
             return self._opebirth.search_all(m.group(1))
@@ -103,6 +87,6 @@ class MessageProcesser:
 
         # Dice
         if re.search(r"\[\d+[dD]\d+(?:[+-]\d+)?\]", text):
-            return self._dice.role(text)
+            return self._dice.roll(text)
 
         return ResponseData()
