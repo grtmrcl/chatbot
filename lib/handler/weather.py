@@ -100,7 +100,7 @@ class Weather:
             weather_list = []
             for forecast in data.get("forecasts", [])[:2]:  # 今日・明日
                 date_label = forecast.get("dateLabel", "")
-                date = forecast.get("date", "")
+                date_str = forecast.get("date", "")
                 telop = forecast.get("telop", "")
                 temp = forecast.get("temperature", {})
                 high = (temp.get("max") or {}).get("celsius") or "-"
@@ -112,7 +112,7 @@ class Weather:
 
                 weather_list.append(
                     {
-                        "date": f"{date_label}({date})",
+                        "date": f"{date_label}({date_str})",
                         "weather": telop,
                         "hightemp": high,
                         "lowtemp": low,

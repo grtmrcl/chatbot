@@ -11,12 +11,14 @@ class Dice:
     MAX_NUM = 100
     MAX_SURFACES = 10000
     DEFAULT_TEMPLATES = {"default": "{{ data.text }}"}
+    # [個数dD面数[±補正]] 形式のダイス記法にマッチする正規表現
+    DICE_RE = re.compile(r"(\[(\d+)[dD](\d+)([+-]\d+)?[^\]]*?\])")
 
     def __init__(self, config: dict):
         self._templates = config.get("dice", {}).get("templates") or self.DEFAULT_TEMPLATES
 
-    def role(self, text: str) -> ResponseData:
-        matches = re.findall(r"(\[(\d+)[dD](\d+)([+-]\d+)?[^\]]*?\])", text)
+    def roll(self, text: str) -> ResponseData:
+        matches = self.DICE_RE.findall(text)
         response_data = ResponseData()
         response_data.templates = self._templates
 

@@ -239,7 +239,7 @@ def main() -> None:
                 for key in new_keys:
                     header_index[key] = len(headers)
                     headers.append(key)
-                sheet.update("A1", [headers])
+                sheet.update("A1", [headers], value_input_option="RAW")
 
             # データ行を構築して追記
             row = [""] * len(headers)

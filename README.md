@@ -200,6 +200,8 @@ omikuji
 
 bot 自身の直前の発言を指定件数削除する。コマンド自体も削除される。
 
+**「メッセージの管理」権限（manage_messages）を持つユーザーのみ実行可能。**
+
 ```
 purge <件数>
 ```
@@ -215,8 +217,8 @@ purge 5
 
 ### ChatGPT（現在無効）
 
-ChatGPT との会話機能は現在コメントアウトされている。
-有効化するには [lib/message_processer.py](lib/message_processer.py) の該当箇所のコメントを解除し、`.env` に `OPENAI_API_KEY` を設定する。
+ChatGPT との会話機能は現在無効化されている。
+有効化するには [lib/message_processer.py](lib/message_processer.py) にルーティングを追加し、`.env` に `OPENAI_API_KEY` を設定する。
 
 有効化後のコマンド:
 

@@ -51,30 +51,41 @@ class ChatGPT:
         self._save_history(redis, talk_id, messages)
         return self._make_response_data(f"set system: {talk_id}")
 
-    def list(self, channel) -> ResponseData:
+    def list_talks(self, channel) -> ResponseData:
         redis = self._get_redis_client(channel)
         prefix = self._get_prefix(channel)
         ids = [k[len(prefix):] for k in redis.keys()]
         return self._make_response_data(str(ids))
 
-    def detail(self, id: str, channel) -> ResponseData:
+    def detail(self, talk_id: str, channel) -> ResponseData:
         redis = self._get_redis_client(channel)
-        messages = self._load_history(redis, id)
+        messages = self._load_history(redis, talk_id)
         summary = [
             {"role": h["role"], "content": h["content"][: self.SUMMARY_MAX_LENGTH]}
             for h in messages
         ]
         return self._make_response_data(str(summary))
 
-    def set_talk_id(self, id: str, channel) -> ResponseData:
-        self._talk_id[channel] = int(id)
+    def set_talk_id(self, talk_id: str, channel) -> ResponseData:
+        try:
+            self._talk_id[channel] = int(talk_id)
+        except ValueError:
+            rd = ResponseData()
+            rd.error_message = f"IDが不正です: {talk_id}"
+            return rd
         return self._make_response_data(f"set talk id: {self._talk_id[channel]}")
 
-    def delete(self, id: str, channel) -> ResponseData:
+    def delete(self, talk_id: str, channel) -> ResponseData:
+        try:
+            numeric_id = int(talk_id)
+        except ValueError:
+            rd = ResponseData()
+            rd.error_message = f"IDが不正です: {talk_id}"
+            return rd
         redis = self._get_redis_client(channel)
-        redis.del_(str(int(id)))
+        redis.del_(str(numeric_id))
         self._talk_id[channel] = 1
-        return self._make_response_data(f"deleted id: {id}")
+        return self._make_response_data(f"deleted id: {talk_id}")
 
     def clear(self, channel) -> ResponseData:
         redis = self._get_redis_client(channel)
