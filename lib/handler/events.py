@@ -84,18 +84,21 @@ class Events:
                 return response_data
 
             all_values = sheet.get_all_values()
-            for row in all_values[1:]:
-                if row and row[0] == event_name:
-                    response_data.data = {"message": f"「{event_name}」は既に登録されています。"}
-                    return response_data
-
-            sheet.append_row(
-                [event_name, start.strftime(DATE_OUTPUT_FORMAT), end.strftime(DATE_OUTPUT_FORMAT)],
-                value_input_option="RAW",
+            existing_row_idx = next(
+                (i + 2 for i, row in enumerate(all_values[1:]) if row and row[0] == event_name),
+                None,
             )
-            response_data.data = {
-                "message": f"「{event_name}」を登録しました。（{start.strftime(DATE_OUTPUT_FORMAT)} ～ {end.strftime(DATE_OUTPUT_FORMAT)}）"
-            }
+            new_row = [event_name, start.strftime(DATE_OUTPUT_FORMAT), end.strftime(DATE_OUTPUT_FORMAT), "TRUE"]
+            if existing_row_idx is not None:
+                sheet.update(f"A{existing_row_idx}:D{existing_row_idx}", [new_row], value_input_option="RAW")
+                response_data.data = {
+                    "message": f"「{event_name}」を上書き登録しました。（{start.strftime(DATE_OUTPUT_FORMAT)} ～ {end.strftime(DATE_OUTPUT_FORMAT)}）"
+                }
+            else:
+                sheet.append_row(new_row, value_input_option="RAW")
+                response_data.data = {
+                    "message": f"「{event_name}」を登録しました。（{start.strftime(DATE_OUTPUT_FORMAT)} ～ {end.strftime(DATE_OUTPUT_FORMAT)}）"
+                }
         except Exception:
             logger.exception("event-register エラー")
             response_data.error_message = "エラーが発生しました。管理者にお知らせください。"

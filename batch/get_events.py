@@ -34,7 +34,7 @@ logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s %(mess
 logger = logging.getLogger(__name__)
 
 SCOPES = ["https://www.googleapis.com/auth/spreadsheets"]
-HEADER = ["イベント名", "開始日", "終了日"]
+HEADER = ["イベント名", "開始日", "終了日", "手動登録"]
 
 DATE_FULL_RE = re.compile(r"(\d{4})/(\d{1,2})/(\d{1,2})")
 DATE_SHORT_RE = re.compile(r"(\d{1,2})/(\d{1,2})")
@@ -311,11 +311,17 @@ def _open_sheet(entry: str | dict) -> gspread.Worksheet:
 
 
 def write_to_sheet(sheet: gspread.Worksheet, events: list[dict]) -> None:
-    """イベント一覧をスプレッドシートに上書き書き込みする"""
-    rows = [HEADER] + [[e["title"], e["start"], e["end"]] for e in events]
+    """イベント一覧をスプレッドシートに上書き書き込みする（手動登録イベントは保持）"""
+    existing = sheet.get_all_values()
+    manual_rows = [row for row in existing[1:] if len(row) > 3 and row[3] == "TRUE"]
+    manual_names = {row[0] for row in manual_rows}
+
+    auto_events = [e for e in events if e["title"] not in manual_names]
+
+    rows = [HEADER] + [[e["title"], e["start"], e["end"], ""] for e in auto_events] + manual_rows
     sheet.clear()
     sheet.update("A1", rows, value_input_option="RAW")
-    logger.info("%d 件をスプレッドシートに書き込みました", len(events))
+    logger.info("%d 件をスプレッドシートに書き込みました（手動登録 %d 件を保持）", len(auto_events), len(manual_rows))
 
 
 def main() -> None:
