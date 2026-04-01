@@ -12,6 +12,15 @@ paths: lib/*
 paths: batch/*
 - update batch/README.md
 
+# 実装手順
+
+1. developブランチから作業ブランチを作成する
+2. 実装の計画を立てる
+3. 実装する
+4. code-revier エージェントでレビューし、必要に応じて修正する
+5. testを書いて実行し、必要に応じて修正する
+6. developへマージし、mainへPRを出す
+
 # Gitブランチ運用ルール
 
 - **開発は必ず `develop` ブランチをベースとすること**
