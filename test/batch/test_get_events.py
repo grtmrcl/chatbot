@@ -1,7 +1,8 @@
 import pytest
 from bs4 import BeautifulSoup
+from unittest.mock import MagicMock
 
-from batch.get_events import _parse_date_range, _extract_events_from_p, _is_in_collapsed_region
+from batch.get_events import _parse_date_range, _extract_events_from_p, _is_in_collapsed_region, write_to_sheet, HEADER
 
 
 class TestParseDateRange:
@@ -176,3 +177,66 @@ class TestIsInCollapsedRegion:
 
         # Then: rgn-content でないので False
         assert result is False
+
+
+class TestWriteToSheet:
+    """スプレッドシートへの書き込み（手動登録イベントの保持）"""
+
+    def _make_sheet(self, existing_rows):
+        mock_sheet = MagicMock()
+        mock_sheet.get_all_values.return_value = existing_rows
+        return mock_sheet
+
+    def test_手動登録フラグ付き行はバッチ後も保持される(self):
+        # Given: D列にTRUEフラグを持つ手動登録イベントが存在するシート
+        existing_rows = [
+            ["イベント名", "開始日", "終了日", "手動登録"],
+            ["自動イベント", "2024/03/01", "2024/03/31", ""],
+            ["手動イベント", "2024/04/01", "2024/04/30", "TRUE"],
+        ]
+        sheet = self._make_sheet(existing_rows)
+        fetched_events = [{"title": "自動イベント", "start": "2024/03/01", "end": "2024/03/31"}]
+
+        # When
+        write_to_sheet(sheet, fetched_events)
+
+        # Then: updateに渡される行に手動登録イベントが含まれる
+        written_rows = sheet.update.call_args[0][1]
+        titles = [row[0] for row in written_rows]
+        assert "手動イベント" in titles
+
+    def test_手動登録イベントと同名の自動取得イベントは除外される(self):
+        # Given: 手動登録と同名の自動取得イベントがある
+        existing_rows = [
+            ["イベント名", "開始日", "終了日", "手動登録"],
+            ["重複イベント", "2024/04/01", "2024/04/30", "TRUE"],
+        ]
+        sheet = self._make_sheet(existing_rows)
+        fetched_events = [{"title": "重複イベント", "start": "2024/03/01", "end": "2024/03/31"}]
+
+        # When
+        write_to_sheet(sheet, fetched_events)
+
+        # Then: 自動取得版は除外され、手動登録版（2024/04/30終了）が保持される
+        written_rows = sheet.update.call_args[0][1]
+        event_rows = [row for row in written_rows if row[0] == "重複イベント"]
+        assert len(event_rows) == 1
+        assert event_rows[0][3] == "TRUE"
+
+    def test_手動登録イベントがない場合は全件上書きされる(self):
+        # Given: 手動登録フラグなしのシート
+        existing_rows = [
+            ["イベント名", "開始日", "終了日", "手動登録"],
+            ["自動イベント", "2024/03/01", "2024/03/31", ""],
+        ]
+        sheet = self._make_sheet(existing_rows)
+        fetched_events = [{"title": "新イベント", "start": "2024/04/01", "end": "2024/04/30"}]
+
+        # When
+        write_to_sheet(sheet, fetched_events)
+
+        # Then: ヘッダー + 新しい自動取得イベントのみ書き込まれる
+        written_rows = sheet.update.call_args[0][1]
+        assert written_rows[0] == HEADER
+        titles = [row[0] for row in written_rows[1:]]
+        assert titles == ["新イベント"]
