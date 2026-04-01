@@ -29,6 +29,10 @@ def _load_reminder_templates() -> dict[str, Any]:
 
 _REMINDER_TEMPLATES = _load_reminder_templates()
 
+_FIXED_EVENTS: list[dict] = [
+    {"name": "保全月次", "end_day": 16},
+]
+
 
 def _parse_date(date_str: str) -> Optional[date]:
     for fmt in DATE_INPUT_FORMATS:
@@ -155,20 +159,26 @@ class Events:
                 return response_data
 
             all_values = sheet.get_all_values()
-            if not all_values:
-                return response_data
-
-            headers = all_values[0]
-            end_col_idx = next((i for i, h in enumerate(headers) if h == "終了日"), None)
-            if end_col_idx is None:
-                response_data.error_message = "「終了日」列が見つかりません。"
-                return response_data
 
             events = []
-            for days, target_date in target_dates.items():
-                for row in all_values[1:]:
-                    if len(row) > end_col_idx and row[end_col_idx] == target_date and row[0]:
-                        events.append({"name": row[0], "days": days})
+
+            if all_values:
+                headers = all_values[0]
+                end_col_idx = next((i for i, h in enumerate(headers) if h == "終了日"), None)
+                if end_col_idx is None:
+                    response_data.error_message = "「終了日」列が見つかりません。"
+                    return response_data
+
+                for days, target_date in target_dates.items():
+                    for row in all_values[1:]:
+                        if len(row) > end_col_idx and row[end_col_idx] == target_date and row[0]:
+                            events.append({"name": row[0], "days": days})
+
+            for days in notify_days:
+                target = base_date + timedelta(days=days)
+                for fe in _FIXED_EVENTS:
+                    if target.day == fe["end_day"]:
+                        events.append({"name": fe["name"], "days": days})
 
             if events:
                 response_data.data = {"events": events}
