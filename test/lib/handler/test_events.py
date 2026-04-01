@@ -179,6 +179,60 @@ class TestEventsReminder:
         # Then
         assert result.error_message is not None
 
+    def test_翌日が16日のとき保全月次が通知される(self):
+        # Given: 基準日の翌日が16日
+        sheet_values = [["イベント名", "開始日", "終了日"]]
+        events = self._make_events(sheet_values)
+
+        # When: 翌日が16日になる基準日（15日）を指定
+        result = events.reminder("ak", "20240415")
+
+        # Then: 保全月次が days=1 で通知される
+        assert result.data is not None
+        names = [e["name"] for e in result.data["events"]]
+        days_list = [e["days"] for e in result.data["events"]]
+        assert "保全月次" in names
+        assert 1 in days_list
+
+    def test_3日後が16日のとき保全月次が通知される(self):
+        # Given: 基準日の3日後が16日
+        sheet_values = [["イベント名", "開始日", "終了日"]]
+        events = self._make_events(sheet_values)
+
+        # When: 3日後が16日になる基準日（13日）を指定
+        result = events.reminder("ak", "20240413")
+
+        # Then: 保全月次が days=3 で通知される
+        assert result.data is not None
+        names = [e["name"] for e in result.data["events"]]
+        days_list = [e["days"] for e in result.data["events"]]
+        assert "保全月次" in names
+        assert 3 in days_list
+
+    def test_翌日も3日後も16日でないとき保全月次は通知されない(self):
+        # Given: 16日から遠い日
+        sheet_values = [["イベント名", "開始日", "終了日"]]
+        events = self._make_events(sheet_values)
+
+        # When: 翌日=2日、3日後=4日 となる基準日（1日）を指定
+        result = events.reminder("ak", "20240401")
+
+        # Then: 通知なし
+        assert result.data is None
+
+    def test_シートが空でも保全月次は通知される(self):
+        # Given: データ行がない空のシート
+        sheet_values = []
+        events = self._make_events(sheet_values)
+
+        # When: 翌日が16日になる基準日を指定
+        result = events.reminder("ak", "20240415")
+
+        # Then: 保全月次が通知される
+        assert result.data is not None
+        names = [e["name"] for e in result.data["events"]]
+        assert "保全月次" in names
+
 
 class TestEventsDelete:
     """登録済みイベントを削除する"""
