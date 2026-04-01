@@ -60,7 +60,7 @@ class TestEventsRegister:
         mock_sheet.append_row.assert_called_once()
         assert result.error_message is None
 
-    def test_既に登録済みのイベントは追加されない(self):
+    def test_既に登録済みのイベントは上書き登録される(self):
         # Given: 既に登録されているイベント
         existing_rows = [
             ["イベント名", "開始日", "終了日"],
@@ -68,12 +68,17 @@ class TestEventsRegister:
         ]
         events, mock_sheet = self._make_events(existing_rows)
 
-        # When: 同じイベントを登録しようとする
+        # When: 同じイベントを登録する
         result = events.register("ak", "既存イベント", "20240401", "20240430")
 
-        # Then: append_rowは呼ばれず、既存旨のメッセージが返る
+        # Then: append_rowは呼ばれず、updateで上書きされる
         mock_sheet.append_row.assert_not_called()
-        assert "既に登録" in result.data["message"]
+        mock_sheet.update.assert_called_once_with(
+            "A2:D2",
+            [["既存イベント", "2024/04/01", "2024/04/30", "TRUE"]],
+            value_input_option="RAW",
+        )
+        assert "上書き登録しました" in result.data["message"]
 
     def test_無効な開始日形式はエラーメッセージを返す(self):
         # Given
