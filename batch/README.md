@@ -101,7 +101,7 @@ EF_OPERATORS_SPREADSHEET={"id": "SpreadsheetID", "sheet": "シート名"}
 ### 実行
 
 ```bash
-docker compose --profile batch build --no-cache
+docker compose --profile batch build
 
 # AK・EF 両方を実行
 docker compose --profile batch run --rm operators
