@@ -5,9 +5,9 @@ services:
       - .env
     environment:
       - TZ=Asia/Tokyo
-      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/chatbot/sa_key.json
     volumes:
-      - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
+      - ${HOME}/.config/chatbot/sa_key.json:/root/.config/chatbot/sa_key.json:ro
     depends_on:
       - redis
     restart: unless-stopped
@@ -25,9 +25,9 @@ services:
       - .env
     environment:
       - TZ=Asia/Tokyo
-      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/chatbot/sa_key.json
     volumes:
-      - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
+      - ${HOME}/.config/chatbot/sa_key.json:/root/.config/chatbot/sa_key.json:ro
     command: ["python", "batch/get_operators.py", "--source", "ak"]
 
   ef-operators:
@@ -37,9 +37,9 @@ services:
       - .env
     environment:
       - TZ=Asia/Tokyo
-      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/chatbot/sa_key.json
     volumes:
-      - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
+      - ${HOME}/.config/chatbot/sa_key.json:/root/.config/chatbot/sa_key.json:ro
     command: ["python", "batch/get_operators.py", "--source", "ef"]
 
   operators:
@@ -49,9 +49,9 @@ services:
       - .env
     environment:
       - TZ=Asia/Tokyo
-      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/chatbot/sa_key.json
     volumes:
-      - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
+      - ${HOME}/.config/chatbot/sa_key.json:/root/.config/chatbot/sa_key.json:ro
     command: ["sh", "-c", "python batch/get_operators.py --source ak && python batch/get_operators.py --source ef"]
 
   ak-events:
@@ -61,9 +61,9 @@ services:
       - .env
     environment:
       - TZ=Asia/Tokyo
-      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/chatbot/sa_key.json
     volumes:
-      - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
+      - ${HOME}/.config/chatbot/sa_key.json:/root/.config/chatbot/sa_key.json:ro
     command: ["python", "batch/get_events.py", "--source", "ak"]
 
   ef-events:
@@ -73,9 +73,9 @@ services:
       - .env
     environment:
       - TZ=Asia/Tokyo
-      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/chatbot/sa_key.json
     volumes:
-      - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
+      - ${HOME}/.config/chatbot/sa_key.json:/root/.config/chatbot/sa_key.json:ro
     command: ["python", "batch/get_events.py", "--source", "ef"]
 
   events:
@@ -85,7 +85,7 @@ services:
       - .env
     environment:
       - TZ=Asia/Tokyo
-      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/gcloud/application_default_credentials.json
+      - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/chatbot/sa_key.json
     volumes:
-      - ${HOME}/.config/gcloud/application_default_credentials.json:/root/.config/gcloud/application_default_credentials.json:ro
+      - ${HOME}/.config/chatbot/sa_key.json:/root/.config/chatbot/sa_key.json:ro
     command: ["sh", "-c", "python batch/get_events.py --source ak && python batch/get_events.py --source ef"]
