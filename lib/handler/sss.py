@@ -109,9 +109,11 @@ class Sss:
         conditions: list[tuple[str, list[str]]] = []
         parts = re.split(r"[\s　]+", conditions_str.strip())
         for part in parts:
-            if "=" not in part:
+            m = re.search(r"[=＝]", part)
+            if not m:
                 continue
-            col, _, val_str = part.partition("=")
+            col = part[: m.start()]
+            val_str = part[m.end() :]
             values = re.split(r"[,，、]", val_str)
             values = [v for v in values if v]
             if col and values:
