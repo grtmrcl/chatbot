@@ -41,6 +41,16 @@ class TestParseConditions:
             "レアリティ=5、6",
             [("レアリティ", ["5", "6"])],
         ),
+        (
+            "全角イコールの単一条件",
+            "レアリティ＝6",
+            [("レアリティ", ["6"])],
+        ),
+        (
+            "全角イコールの複数条件",
+            "レアリティ＝6 種族＝サンクタ",
+            [("レアリティ", ["6"]), ("種族", ["サンクタ"])],
+        ),
     ])
     def test_条件文字列を列名と値リストのタプルに変換する(self, name, conditions_str, expected):
         result = self.sss._parse_conditions(conditions_str)
