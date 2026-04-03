@@ -69,7 +69,7 @@ def _resolve_channel(channel_id_str: str, channel_config: dict[str, str]):
     return None
 
 
-@tasks.loop(time=datetime.time(10, 0, tzinfo=JST))
+@tasks.loop(time=datetime.time(12, 0, tzinfo=JST))
 async def daily_event_remind():
     for channel_id_str, channel_config in servers.items():
         label_value = channel_config.get("event_remind_label")
