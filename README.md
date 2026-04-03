@@ -23,7 +23,7 @@ cp .env-sample .env
 | `OPENAI_API_KEY` | OpenAI API キー |
 | `SSS_SPREADSHEETS` | `sss` / `ss-omikuji` コマンドで使用するスプレッドシートの識別子→ID マップ（JSON） |
 | `EVENTS_SPREADSHEETS` | `event-register` / `event-remind` コマンドで使用するスプレッドシートの識別子→ID マップ（JSON） |
-| `GOOGLE_CLOUD_PROJECT` | Google Cloud プロジェクト ID（sss コマンド用 ADC） |
+| `GOOGLE_APPLICATION_CREDENTIALS` | サービスアカウントキー JSON ファイルのパス（Google スプレッドシートへのアクセスに使用） |
 
 ### DISCORD_SERVERS の設定例
 
@@ -237,7 +237,7 @@ ChatGPT との会話機能は現在無効化されている。
 ### スプレッドシート検索
 
 Google スプレッドシートから条件指定で検索し、一致した行の1列目の値を返す。
-認証は Application Default Credentials (ADC) を使用する。
+認証はサービスアカウントキー（`GOOGLE_APPLICATION_CREDENTIALS` で指定した JSON ファイル）を使用する。
 
 ```
 sss <識別子> <条件>...
@@ -267,6 +267,7 @@ SSS_SPREADSHEETS={"ak": {"id": "スプレッドシートID", "sheet": "シート
 | `列名=値` | 指定列に値が部分一致する行を絞り込む |
 | `列名=値1,値2` | 全角・半角カンマで区切るとOR条件 |
 | 複数条件をスペースで区切る | 全角・半角スペースで区切るとAND条件 |
+| `列名 = 値` | イコール（`=`・`＝`）の前後に全角・半角スペースがあっても許容 |
 
 #### 動作
 
