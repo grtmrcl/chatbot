@@ -105,17 +105,13 @@ class Sss:
         """
         '列名=値1,値2 列名2=値3' をパースして [(列名, [値1, 値2]), (列名2, [値3])] を返す。
         全角・半角スペースで条件を区切り、全角・半角カンマで値を区切る。
+        イコール（=・＝）の前後に全角・半角スペースがあっても許容する。
         """
         conditions: list[tuple[str, list[str]]] = []
-        parts = re.split(r"[\s　]+", conditions_str.strip())
-        for part in parts:
-            m = re.search(r"[=＝]", part)
-            if not m:
-                continue
-            col = part[: m.start()]
-            val_str = part[m.end() :]
-            values = re.split(r"[,，、]", val_str)
-            values = [v for v in values if v]
+        for m in re.finditer(r"(\S+?)[\s　]*[=＝][\s　]*([^\s　=＝]+)", conditions_str):
+            col = m.group(1)
+            val_str = m.group(2)
+            values = [v for v in re.split(r"[,，、]", val_str) if v]
             if col and values:
                 conditions.append((col, values))
         return conditions

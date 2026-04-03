@@ -162,9 +162,9 @@ async def on_message(message: discord.Message):
         channel_config = servers[str(guild_id)]
     else:
         return
-    # bot自身のメッセージを削除するコマンド: purge [件数] (デフォルト: 1)
+    # bot自身のメッセージを削除するコマンド: del [件数] (デフォルト: 1)
     # 管理者権限またはメッセージ管理権限を持つユーザーのみ実行可能
-    if m := re.match(r"^purge(?:\s+(\d+))?$", message.content.strip()):
+    if m := re.match(r"^del(?:\s+(\d+))?$", message.content.strip()):
         if not message.author.guild_permissions.manage_messages:
             return
         count = int(m.group(1)) if m.group(1) else 1
