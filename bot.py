@@ -1,7 +1,9 @@
+import asyncio
 import datetime
 import json
 import logging
 import os
+import pathlib
 import re
 import zoneinfo
 
@@ -21,6 +23,12 @@ logging.basicConfig(
 
 PLATFORM = "discord"
 MESSAGE_MAX_LENGTH = 2000
+
+# 牌譜インポート設定
+_paifu_dir = os.environ.get("PAIFU_DIR")
+_amae_scripts_dir = os.environ.get("AMAE_KOROMO_SCRIPTS_DIR")
+PAIFU_DIR = pathlib.Path(_paifu_dir).resolve() if _paifu_dir else None
+AMAE_KOROMO_SCRIPTS_DIR = pathlib.Path(_amae_scripts_dir).resolve() if _amae_scripts_dir else None
 
 # env vars からチャンネル設定を構築
 # 例: DISCORD_SERVERS={"123456789012345678": {"response_type": "default"}}
@@ -148,6 +156,59 @@ async def on_ready():
         daily_opebirth.start()  # type: ignore[union-attr]
 
 
+_SAFE_FILENAME_RE = re.compile(r'^[\w\-\.]+\.json$')
+
+
+async def _handle_paifu_import(message: discord.Message, attachments: list[discord.Attachment]) -> None:
+    """@mention + .json添付ファイルで牌譜をインポートする。"""
+    if PAIFU_DIR is None or AMAE_KOROMO_SCRIPTS_DIR is None:
+        await message.reply("PAIFU_DIR / AMAE_KOROMO_SCRIPTS_DIR が設定されていません。")
+        return
+
+    PAIFU_DIR.mkdir(parents=True, exist_ok=True)
+    saved_files: list[str] = []
+    for attachment in attachments:
+        if not _SAFE_FILENAME_RE.match(attachment.filename):
+            await message.reply(f"不正なファイル名です: {attachment.filename}")
+            return
+        dest = PAIFU_DIR / attachment.filename
+        try:
+            data = await attachment.read()
+            dest.write_bytes(data)
+        except Exception:
+            logger.exception("ファイル保存失敗: %s", attachment.filename)
+            await message.reply(f"ファイル保存に失敗しました: {attachment.filename}")
+            return
+        saved_files.append(attachment.filename)
+        logger.info("牌譜ファイルを保存: %s", dest)
+
+    filenames = ",".join(saved_files)
+    cmd = [
+        "docker", "compose", "run", "--rm",
+        "-e", "IMPORT_PAIFU=1",
+        "-e", f"PAIFU_FILES={filenames}",
+        "app", "node", "index.js",
+    ]
+    logger.info("docker compose実行 cwd=%s files=%s", AMAE_KOROMO_SCRIPTS_DIR, filenames)
+    try:
+        proc = await asyncio.create_subprocess_exec(
+            *cmd,
+            cwd=str(AMAE_KOROMO_SCRIPTS_DIR),
+            stdout=asyncio.subprocess.PIPE,
+            stderr=asyncio.subprocess.STDOUT,
+        )
+        stdout, _ = await proc.communicate()
+        output = stdout.decode(errors="replace").strip() if stdout else ""
+        if proc.returncode == 0:
+            await message.reply(f"インポート完了: {filenames}")
+        else:
+            logger.error("docker compose失敗 (returncode=%d): %s", proc.returncode, output)
+            await message.reply(f"インポート失敗 (code={proc.returncode}): {filenames}")
+    except Exception:
+        logger.exception("docker compose実行エラー")
+        await message.reply("インポート中にエラーが発生しました。")
+
+
 @client.event
 async def on_message(message: discord.Message):
     if message.author == client.user:
@@ -187,6 +248,13 @@ async def on_message(message: discord.Message):
                 if deleted >= count:
                     break
         return
+
+    # @mention + .json添付ファイルで牌譜インポート（チャンネル設定で有効化されている場合のみ）
+    if channel_config.get("paifu_import") and client.user in message.mentions:
+        json_attachments = [a for a in message.attachments if a.filename.endswith(".json")]
+        if json_attachments:
+            await _handle_paifu_import(message, json_attachments)
+            return
 
     response_data = processer.get_response_data(channel=channel_id, text=message.content)
 

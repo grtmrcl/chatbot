@@ -8,6 +8,8 @@ services:
       - GOOGLE_APPLICATION_CREDENTIALS=/root/.config/chatbot/sa_key.json
     volumes:
       - ${HOME}/.config/chatbot/sa_key.json:/root/.config/chatbot/sa_key.json:ro
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ${AMAE_KOROMO_SCRIPTS_DIR}:${AMAE_KOROMO_SCRIPTS_DIR}
     depends_on:
       - redis
     restart: unless-stopped
