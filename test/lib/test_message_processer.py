@@ -133,7 +133,7 @@ class TestMessageProcesserOmikuji:
     def test_omikujiコマンドがデフォルトタイプで引かれる(self):
         self.processer._omikuji.draw = MagicMock(return_value=self.mock_result)  # type: ignore
         self.processer.get_response_data(None, "omikuji")
-        self.processer._omikuji.draw.assert_called_once_with("g1")
+        self.processer._omikuji.draw.assert_called_once_with("unsei")
 
     def test_タイプ指定のomikujiコマンドがルーティングされる(self):
         self.processer._omikuji.draw = MagicMock(return_value=self.mock_result)  # type: ignore
@@ -183,7 +183,7 @@ class TestMessageProcesserDice:
 
     def test_テキスト中のダイス記法もDiceにルーティングされる(self):
         self.processer.get_response_data(None, "攻撃: [1d20+5]")
-        self.processer._dice.roll.assert_called_once_with("攻榇: [1d20+5]")  # type: ignore
+        self.processer._dice.roll.assert_called_once_with("攻撃: [1d20+5]")  # type: ignore
 
 
 class TestMessageProcesserSpecial:

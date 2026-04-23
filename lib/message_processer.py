@@ -58,7 +58,7 @@ class MessageProcesser:
 
         # Omikuji
         if m := re.match(r"^omikuji(?:\s+(\w+))?$", text):
-            omikuji_type = m.group(1) or "g1"
+            omikuji_type = m.group(1) or "unsei"
             return self._omikuji.draw(omikuji_type)
 
         # Omikuji SS
